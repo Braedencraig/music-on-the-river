@@ -188,7 +188,11 @@ export default function AdminDashboard({ responses }: AdminDashboardProps) {
                     return (
                       <div key={hourKey} className="bg-gray-50 rounded-lg p-4">
                         <h4 className="font-medium mb-2">
-                          {hour === 21 ? "9:00 PM+" : `${hour}:00`}
+                          {hour === 21
+                            ? "9:00 PM+"
+                            : `${hour % 12 || 12}:00 ${
+                                hour >= 12 ? "PM" : "AM"
+                              }`}
                         </h4>
                         <p className="text-sm text-gray-600 mb-2">
                           Responses: {hourData.total}

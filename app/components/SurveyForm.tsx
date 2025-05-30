@@ -42,6 +42,7 @@ export default function SurveyForm({ concertDate }: SurveyFormProps) {
           concert_date: concertDate,
           rating,
           feedback: feedback || null,
+          created_at: new Date().toISOString(),
         },
       ]);
 

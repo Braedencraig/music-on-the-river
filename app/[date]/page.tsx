@@ -3,6 +3,7 @@ import SurveyForm from "../components/SurveyForm";
 
 const validDates = [
   "2024-01-01",
+  "2024-03-19",
   "2024-06-26",
   "2024-07-31",
   "2024-08-28",
@@ -20,7 +21,11 @@ export default async function ConcertSurveyPage({
     notFound();
   }
 
-  const formattedDate = new Date(date).toLocaleDateString("en-US", {
+  // Parse the date string and adjust for timezone
+  const [year, month, day] = date.split("-").map(Number);
+  const concertDate = new Date(year, month - 1, day);
+
+  const formattedDate = concertDate.toLocaleDateString("en-US", {
     weekday: "long",
     year: "numeric",
     month: "long",

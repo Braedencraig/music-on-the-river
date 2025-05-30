@@ -2,6 +2,7 @@ import Link from "next/link";
 
 const concertDates = [
   { date: "2024-01-01", label: "Test Date" },
+  { date: "2024-03-19", label: "Today's Test Date" },
   { date: "2024-06-26", label: "June 26th, 2024" },
   { date: "2024-07-31", label: "July 31st, 2024" },
   { date: "2024-08-28", label: "August 28th, 2024" },

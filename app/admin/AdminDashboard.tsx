@@ -3,13 +3,14 @@
 import { useState } from "react";
 
 const RATING_EMOJIS = ["😞", "😐", "🙂", "😊", "😄"] as const;
+const VALID_HOURS = [16, 17, 18, 19, 20, 21]; // 4 PM to 9 PM
 
 interface SurveyResponse {
   id: string;
   concert_date: string;
   rating: number;
   feedback: string | null;
-  created_at: string;
+  created_at: string | null;
 }
 
 interface AggregatedData {
@@ -41,6 +42,7 @@ export default function AdminDashboard({ responses }: AdminDashboardProps) {
   // Aggregate data by concert date and hour
   const aggregatedData = responses.reduce(
     (acc: { [key: string]: AggregatedData }, response: SurveyResponse) => {
+      // Use concert_date for the date display
       const date = new Date(response.concert_date).toLocaleDateString("en-US", {
         weekday: "long",
         year: "numeric",
@@ -48,8 +50,21 @@ export default function AdminDashboard({ responses }: AdminDashboardProps) {
         day: "numeric",
       });
 
-      const responseTime = new Date(response.created_at);
-      const hour = responseTime.getHours();
+      // Use current time if created_at is NULL
+      const responseTime = response.created_at
+        ? new Date(response.created_at)
+        : new Date();
+      let hour = responseTime.getHours();
+
+      // If hour is after 9 PM, group it with 9 PM
+      if (hour > 21) {
+        hour = 21;
+      }
+      // If hour is before 4 PM, group it with 4 PM
+      else if (hour < 16) {
+        hour = 16;
+      }
+
       const hourKey = `${hour}:00`;
 
       if (!acc[date]) {
@@ -98,7 +113,8 @@ export default function AdminDashboard({ responses }: AdminDashboardProps) {
     data.averageRating = data.averageRating / data.totalResponses;
   });
 
-  const formatTime = (dateString: string) => {
+  const formatTime = (dateString: string | null) => {
+    if (!dateString) return "Time not recorded";
     return new Date(dateString).toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
@@ -160,11 +176,20 @@ export default function AdminDashboard({ responses }: AdminDashboardProps) {
               <div className="mt-8">
                 <h3 className="text-xl font-medium mb-4">Hourly Breakdown</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {Object.entries(data.hourlyData)
-                    .sort(([a], [b]) => parseInt(a) - parseInt(b))
-                    .map(([hour, hourData]) => (
-                      <div key={hour} className="bg-gray-50 rounded-lg p-4">
-                        <h4 className="font-medium mb-2">{hour}</h4>
+                  {VALID_HOURS.map((hour) => {
+                    const hourKey = `${hour}:00`;
+                    const hourData = data.hourlyData[hourKey] || {
+                      total: 0,
+                      ratings: [0, 0, 0, 0, 0],
+                      feedback: [],
+                      responses: [],
+                    };
+
+                    return (
+                      <div key={hourKey} className="bg-gray-50 rounded-lg p-4">
+                        <h4 className="font-medium mb-2">
+                          {hour === 21 ? "9:00 PM+" : `${hour}:00`}
+                        </h4>
                         <p className="text-sm text-gray-600 mb-2">
                           Responses: {hourData.total}
                         </p>
@@ -183,7 +208,7 @@ export default function AdminDashboard({ responses }: AdminDashboardProps) {
                                     className="bg-blue-500 h-3 rounded-full"
                                     style={{
                                       width: `${
-                                        (count / hourData.total) * 100
+                                        (count / (hourData.total || 1)) * 100
                                       }%`,
                                     }}
                                   />
@@ -201,7 +226,7 @@ export default function AdminDashboard({ responses }: AdminDashboardProps) {
                               className="text-sm text-blue-600 hover:text-blue-800"
                               onClick={() =>
                                 setSelectedFeedback({
-                                  hour,
+                                  hour: hourKey,
                                   responses: hourData.responses,
                                 })
                               }
@@ -211,7 +236,8 @@ export default function AdminDashboard({ responses }: AdminDashboardProps) {
                           </div>
                         )}
                       </div>
-                    ))}
+                    );
+                  })}
                 </div>
               </div>
 
@@ -249,11 +275,15 @@ export default function AdminDashboard({ responses }: AdminDashboardProps) {
             </div>
             <div className="space-y-4">
               {selectedFeedback.responses
-                .sort(
-                  (a, b) =>
-                    new Date(b.created_at).getTime() -
-                    new Date(a.created_at).getTime()
-                )
+                .sort((a, b) => {
+                  const timeA = a.created_at
+                    ? new Date(a.created_at).getTime()
+                    : 0;
+                  const timeB = b.created_at
+                    ? new Date(b.created_at).getTime()
+                    : 0;
+                  return timeB - timeA;
+                })
                 .map((response) => (
                   <div
                     key={response.id}

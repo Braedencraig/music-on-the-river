@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 
-const RATING_EMOJIS = ["😞", "😐", "🙂", "😊", "😄"] as const;
+// const RATING_EMOJIS = ["😞", "😐", "🙂", "😊", "😄"] as const;
+const RATING_EMOJIS = ["😞", "🙂", "😄"] as const;
 const VALID_HOURS = [16, 17, 18, 19, 20, 21]; // 4 PM to 9 PM
 
 interface SurveyResponse {

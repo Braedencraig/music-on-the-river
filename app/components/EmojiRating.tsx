@@ -7,7 +7,8 @@ interface EmojiRatingProps {
   selectedRating?: number;
 }
 
-const emojis = ["😞", "😐", "🙂", "😊", "😄"];
+// const emojis = ["😞", "😐", "🙂", "😊", "😄"];
+const emojis = ["😞", "🙂", "😄"];
 
 export default function EmojiRating({
   onRatingSelect,
